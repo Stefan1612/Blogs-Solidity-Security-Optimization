@@ -59,9 +59,9 @@ contract MaliciousContract {
 
 // Third contract (The right way to do it)
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-
-contract NaiveContract {
+contract NaiveContract is ReentrancyGuard {
 
     uint256 public withdrawalLimit = 1 ether;
     mapping(address => uint256) public lastWithdrawTime;
@@ -71,7 +71,7 @@ contract NaiveContract {
         balances[msg.sender] += msg.value;
     }
 
-    function withdrawFunds (uint256 _weiToWithdraw) public {
+    function withdrawFunds (uint256 _weiToWithdraw) public nonReentrant {
 
         require(balances[msg.sender] >= _weiToWithdraw);
         // limit the withdrawal
@@ -82,8 +82,8 @@ contract NaiveContract {
         lastWithdrawTime[msg.sender] = now;
  
 
-        msg.sender.transfer(_weiToWithdraw);
-    
+        require(msg.sender.call.value(_weiToWithdraw)());
+        
 
     }
  }
